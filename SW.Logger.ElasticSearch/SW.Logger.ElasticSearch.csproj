@@ -5,10 +5,13 @@
     <PackageId>SimplyWorks.Logger.ElasticSearch</PackageId>
     <Authors>Simplify9</Authors>
     <Product>SimplyWorks.Logger.ElasticSearch</Product>
+    <Description>Serilog-based ElasticSearch logging library for .NET 8 with data streams, lifecycle management, and request context enrichment. Provides structured logging to ElasticSearch with automatic index management and correlation tracking. See GitHub repository for full documentation and usage examples.</Description>
+    <PackageTags>serilog;elasticsearch;logging;structured-logging;datastreams;asp.net-core;correlation;observability</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/simplify9/Logger</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/simplify9/Logger</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/simplify9/SW-Logger</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/simplify9/SW-Logger</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>SW.Logger.ElasticSearch</RootNamespace>
   </PropertyGroup>
 
@@ -28,6 +31,10 @@
     <None Include="..\icon.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

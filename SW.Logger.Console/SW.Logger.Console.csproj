@@ -7,10 +7,13 @@
         <PackageId>SimplyWorks.Logger.Console</PackageId>
         <Authors>Simplify9</Authors>
         <Product>SimplyWorks.Logger.Console</Product>
+        <Description>Enhanced console logging library for .NET 8 applications built on Serilog. Features structured logging, request context enrichment with correlation IDs, and configurable output formatting. Perfect for development and production console logging scenarios. See GitHub repository for full documentation and usage examples.</Description>
+        <PackageTags>serilog;console;logging;structured-logging;asp.net-core;correlation;console-logger;development</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
-        <PackageProjectUrl>https://github.com/simplify9/Logger</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/simplify9/Logger</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/simplify9/SW-Logger</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/simplify9/SW-Logger</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RootNamespace>SW.Logger.Console</RootNamespace>
     </PropertyGroup>
 
@@ -20,6 +23,10 @@
         <Pack>True</Pack>
         <PackagePath></PackagePath>
         <Link>icon.png</Link>
+      </None>
+      <None Include="..\README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
       </None>
     </ItemGroup>
 
