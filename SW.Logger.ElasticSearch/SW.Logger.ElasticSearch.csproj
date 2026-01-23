@@ -23,7 +23,7 @@
     <PackageReference Include="Elastic.Serilog.Sinks" Version="8.18.2" />
     <PackageReference Include="NEST" Version="7.17.5" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
-    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="8.0.0" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="8.1.2" />
 
   </ItemGroup>
 
