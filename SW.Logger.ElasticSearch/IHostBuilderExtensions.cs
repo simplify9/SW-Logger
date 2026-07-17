@@ -18,10 +18,29 @@ using CertificateValidations = Elasticsearch.Net.CertificateValidations;
 
 namespace SW.Logger.ElasticSerach
 {
+    /// <summary>
+    /// Extension methods for configuring the SW ElasticSearch Logger on the application host.
+    /// </summary>
     public static class IHostBuilderExtensions
     {
         private const string IndexLifecycleName = "index.lifecycle.name";
 
+        /// <summary>
+        /// Configures Serilog on the host with structured logging to both the console and an
+        /// ElasticSearch data stream.
+        /// <para>
+        /// Settings are read from the <c>SwLogger</c> section of <c>appsettings.json</c> and can
+        /// be overridden by the optional <paramref name="configure"/> callback.
+        /// ElasticSearch export is only activated when <see cref="LoggerOptions.ElasticsearchUrl"/>
+        /// is set and the current environment is listed in
+        /// <see cref="LoggerOptions.ElasticsearchEnvironments"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="IHostBuilder"/> to configure.</param>
+        /// <param name="configure">
+        /// Optional callback to configure <see cref="LoggerOptions"/> before the logger is built.
+        /// </param>
+        /// <returns>The same <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder UseSwElasticSearchLogger(this IHostBuilder builder, Action<LoggerOptions> configure = null)
         {
             var loggerOptions = new LoggerOptions
