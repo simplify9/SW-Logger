@@ -4,6 +4,7 @@ using Serilog;
 using Serilog.Events;
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -14,6 +15,7 @@ using Elastic.Serilog.Sinks;
 using Elastic.Transport;
 using Elasticsearch.Net;
 using Nest;
+using Serilog.Formatting.Compact;
 using CertificateValidations = Elasticsearch.Net.CertificateValidations;
 
 namespace SW.Logger.ElasticSerach
@@ -52,8 +54,11 @@ namespace SW.Logger.ElasticSerach
                 //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Environment", hostBuilderContext.HostingEnvironment.EnvironmentName)
-                .Enrich.WithProperty("ApplicationVersion", loggerOptions.ApplicationVersion)
-                .WriteTo.Console();
+                .Enrich.WithProperty("ApplicationVersion", loggerOptions.ApplicationVersion);
+
+            loggerConfiguration = Debugger.IsAttached
+                ? loggerConfiguration.WriteTo.Console()
+                : loggerConfiguration.WriteTo.Console(new CompactJsonFormatter());
 
             if (hostBuilderContext.HostingEnvironment.IsDevelopment())
                 loggerConfiguration = loggerConfiguration
