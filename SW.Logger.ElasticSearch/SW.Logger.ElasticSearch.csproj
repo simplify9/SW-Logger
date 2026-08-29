@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/simplify9/SW-Logger</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RootNamespace>SW.Logger.ElasticSearch</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

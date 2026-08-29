@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>SimplyWorks.Logger.OpenTelemetry</PackageId>
+    <Authors>Simplify9</Authors>
+    <Product>SimplyWorks.Logger.OpenTelemetry</Product>
+    <Description>OpenTelemetry-based logging, tracing, and metrics library for .NET 8 applications. Supports OTLP export for logs, traces, and metrics with ASP.NET Core and HTTP client instrumentation, request context enrichment, and configurable sampling. See GitHub repository for full documentation and usage examples.</Description>
+    <PackageTags>opentelemetry;otlp;logging;tracing;metrics;structured-logging;asp.net-core;observability;otel</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/simplify9/SW-Logger</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/simplify9/SW-Logger</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RootNamespace>SW.Logger.OpenTelemetry</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.4.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+    <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="8.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
+

@@ -15,6 +15,7 @@
         <RepositoryUrl>https://github.com/simplify9/SW-Logger</RepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RootNamespace>SW.Logger.Console</RootNamespace>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>

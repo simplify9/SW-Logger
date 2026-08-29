@@ -33,7 +33,7 @@ jobs:
       - name: Pack and Push NuGet Package
         uses: simplify9/.github/.github/actions/dotnet-pack-push@main
         with:
-          projects: "SW.Logger.ElasticSearch/SW.Logger.ElasticSearch.csproj SW.Logger.Console/SW.Logger.Console.csproj"
+          projects: "SW.Logger.ElasticSearch/SW.Logger.ElasticSearch.csproj SW.Logger.Console/SW.Logger.Console.csproj SW.Logger.OpenTelemetry/SW.Logger.OpenTelemetry.csproj"
           configuration: "Release"
           version: ${{ steps.semver.outputs.version }}
           api-key: ${{ secrets.SWNUGETKEY }}

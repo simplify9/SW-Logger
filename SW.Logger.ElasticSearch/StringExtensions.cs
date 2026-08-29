@@ -3,8 +3,27 @@ using System.Linq;
 
 namespace SW.Logger.ElasticSerach
 {
+    /// <summary>
+    /// Internal string helper utilities for the SW ElasticSearch Logger.
+    /// </summary>
     public static class StringExtensions
     {
+        /// <summary>
+        /// Validates that <paramref name="name"/> is a legal ElasticSearch index name.
+        /// <para>
+        /// Rules enforced:
+        /// <list type="bullet">
+        ///   <item><description>Must be all lowercase.</description></item>
+        ///   <item><description>Must not contain the characters <c>/ \ * ? " &lt; &gt; ' | :</c>.</description></item>
+        ///   <item><description>Must not start with <c>-</c>, <c>_</c>, or <c>+</c>.</description></item>
+        /// </list>
+        /// </para>
+        /// </summary>
+        /// <param name="name">The candidate index name to validate.</param>
+        /// <returns>
+        /// A tuple of <c>(true, null)</c> when the name is valid, or
+        /// <c>(false, errorMessage)</c> listing all validation failures.
+        /// </returns>
         public static (bool, string) IsValidIndexName(this string name)
         {
             var errorMessages = new List<string>();
