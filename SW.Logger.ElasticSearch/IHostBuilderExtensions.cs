@@ -22,8 +22,6 @@ namespace SW.Logger.ElasticSerach
 {
     public static class IHostBuilderExtensions
     {
-        private const string IndexLifecycleName = "index.lifecycle.name";
-
         public static IHostBuilder UseSwElasticSearchLogger(this IHostBuilder builder, Action<LoggerOptions> configure = null)
         {
             var loggerOptions = new LoggerOptions
@@ -68,11 +66,14 @@ namespace SW.Logger.ElasticSerach
                 loggerOptions.ElasticsearchEnvironments.Split(',').Select(env => env.Trim()).Contains(
                     hostBuilderContext.HostingEnvironment.EnvironmentName, StringComparer.OrdinalIgnoreCase))
             {
-                CreateLifeCyclePolicy(loggerOptions);
+                var dataStream = new DataStreamName("logs", loggerOptions.ApplicationName.ToLower(),
+                    hostBuilderContext.HostingEnvironment.EnvironmentName);
+                RetentionManager.Start(loggerOptions, dataStream.ToString());
+
                 loggerConfiguration = loggerConfiguration
                     .WriteTo.Elasticsearch(new[] { new Uri(loggerOptions.ElasticsearchUrl) }, opts =>
                     {
-                        opts.DataStream = new DataStreamName("logs", loggerOptions.ApplicationName.ToLower(), hostBuilderContext.HostingEnvironment.EnvironmentName);
+                        opts.DataStream = dataStream;
                         opts.BootstrapMethod = BootstrapMethod.Failure;
                         opts.ConfigureChannel = channelOpts =>
                         {
@@ -106,35 +107,5 @@ namespace SW.Logger.ElasticSerach
             return loggerConfiguration; //.ReadFrom.Configuration(hostBuilderContext.Configuration);
         }
 
-        private static void CreateLifeCyclePolicy(LoggerOptions loggerOptions)
-        {
-            var uri = new Uri(loggerOptions.ElasticsearchUrl);
-            var settings = new ConnectionSettings(uri);
-            settings.BasicAuthentication(loggerOptions.ElasticsearchUser, loggerOptions.ElasticsearchPassword);
-            var client = new ElasticClient(settings);
-
-            // create lifecycle
-            client.IndexLifecycleManagement.PutLifecycle(loggerOptions.GetPolicyName(), p =>
-                p.Policy(po => po.Phases(a => a.Delete(w => w
-                        .MinimumAge($"{loggerOptions.ElasticsearchDeleteIndexAfterDays}d")
-                        .Actions(ac => ac
-                            .Delete(f => f)
-                        )
-                    )
-                )));
-
-            // apply lifecycle on existing if any
-            client.Indices.UpdateSettings(
-                new UpdateIndexSettingsRequest($"{loggerOptions.ApplicationName.ToLower()}-*")
-                {
-                    IndexSettings = new IndexSettings
-                    {
-                        { IndexLifecycleName, loggerOptions.GetPolicyName() }
-                    }
-                });
-        }
-
-        private static string GetPolicyName(this LoggerOptions loggerOptions) =>
-            $"{loggerOptions.ApplicationName.ToLower()}-policy";
     }
 }

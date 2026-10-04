@@ -136,7 +136,7 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 - `ElasticsearchPassword`: ElasticSearch password
 - `ElasticsearchEnvironments`: Environments where ElasticSearch logging is enabled
 - `ElasticsearchCertificatePath`: Path to SSL certificate (optional)
-- `ElasticsearchDeleteIndexAfterDays`: Days after which indices are deleted (default: 90)
+- `ElasticsearchDeleteIndexAfterDays`: Days logs are kept before being deleted (default: 90). Set to `0` to keep logs forever.
 
 ## Usage Examples
 
@@ -207,7 +207,10 @@ SW-Logger/
 The ElasticSearch logger uses data streams with the naming pattern: `logs-{application-name}-{environment}`
 
 ### Index Lifecycle Management
-Automatically creates and applies lifecycle policies that delete indices after the configured retention period.
+On startup, and every 24 hours after, the logger creates an ILM policy named `logs-{application-name}-{environment}-retention`
+and applies it to its data stream. The policy rolls the data stream over monthly (or at 50 GB per shard) and deletes data
+`ElasticsearchDeleteIndexAfterDays` after rollover. Because it's applied to the data stream itself rather than through an
+index template, it isn't affected by which index template wins for the stream.
 
 ### Authentication
 Supports both basic authentication and certificate-based authentication for ElasticSearch clusters.

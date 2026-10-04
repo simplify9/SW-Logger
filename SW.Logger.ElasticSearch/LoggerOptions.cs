@@ -26,6 +26,7 @@ namespace SW.Logger.ElasticSerach
         public string ElasticsearchEnvironments { get; set; }
         
         public string ElasticsearchCertificatePath { get; set; }
+        // Logs older than this are deleted from the data stream. 0 or less keeps them forever.
         public int ElasticsearchDeleteIndexAfterDays { get; set; }
 
     }
