@@ -32,7 +32,15 @@ public static class IServiceCollectionExtensions
 
         var loggerConfiguration = new LoggerConfiguration()
             .MinimumLevel.Is((LogEventLevel)loggerOptions.LoggingLevel)
-            //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            // Framework internals are noisy and slow at Debug/Information. Request logging
+            // (UseSWConsoleLogger) replaces ASP.NET Core's own per-request lines.
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+            // Quiet unless slow (see LoggerOptions.SlowQueryMilliseconds); failures always show.
+            .MinimumLevel.Override(RequestLogging.EfCommandSource,
+                loggerOptions.SlowQueryMilliseconds > 0 ? LogEventLevel.Information : LogEventLevel.Warning)
+            // Logs "Request context set successfully" on every request.
+            .MinimumLevel.Override("UseHttpUserRequestContext", LogEventLevel.Warning)
             .Enrich.FromLogContext()
             .Enrich.WithProperty("Environment", hostEnvironment.EnvironmentName)
             .Enrich.WithProperty("ApplicationVersion", loggerOptions.ApplicationVersion)
@@ -41,6 +49,15 @@ public static class IServiceCollectionExtensions
         loggerConfiguration = Debugger.IsAttached
             ? loggerConfiguration.WriteTo.Console()
             : loggerConfiguration.WriteTo.Console(new CompactJsonFormatter());
+
+        if (loggerOptions.SlowQueryMilliseconds > 0)
+            loggerConfiguration.Filter.ByExcluding(e =>
+                RequestLogging.IsFastEfCommand(e, loggerOptions.SlowQueryMilliseconds));
+
+        // The request-completed line is Information; keep it flowing when the global level is higher.
+        if (loggerOptions.LogRequests)
+            loggerConfiguration.MinimumLevel.Override("Serilog.AspNetCore.RequestLoggingMiddleware",
+                (LogEventLevel)Math.Min(loggerOptions.LoggingLevel, (int)LogEventLevel.Information));
 
         Log.Information("Serilog started from SwLogger.");
 
