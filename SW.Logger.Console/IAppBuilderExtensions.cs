@@ -11,7 +11,14 @@ public static class IAppBuilderExtensions
 
     public static IApplicationBuilder UseSWConsoleLogger(this IApplicationBuilder applicationBuilder)
     {
-        applicationBuilder.UseSerilogRequestLogging();
+        var options = applicationBuilder.ApplicationServices.GetService<LoggerOptions>() ?? new LoggerOptions();
+        if (options.LogRequests)
+            applicationBuilder.UseSerilogRequestLogging(o =>
+            {
+                RequestLogging.Configure(o, options);
+                // AddSWConsoleLogger doesn't assign Log.Logger, and the middleware falls back to it.
+                o.Logger = applicationBuilder.ApplicationServices.GetService<Serilog.ILogger>();
+            });
         applicationBuilder.UseRequestContextLogEnricher();
         return applicationBuilder;
     }
