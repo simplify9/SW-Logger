@@ -88,6 +88,17 @@ public static IHostBuilder CreateHostBuilder(string[] args) =>
         });
 ```
 
+To add more Serilog sinks or enrichers, pass `configureLogger`; it runs after the built-in ones. Serilog replaces the .NET logging pipeline, so a logging provider such as Sentry's never receives these logs unless it is added here as a Serilog sink:
+
+```csharp
+builder.Host.UseSwElasticSearchLogger(configureLogger: (context, loggerConfiguration) =>
+    loggerConfiguration.WriteTo.Sentry(o =>
+    {
+        o.InitializeSdk = false; // already initialized by UseSentry
+        o.MinimumEventLevel = LogEventLevel.Error;
+    }));
+```
+
 #### 2. Configure Application Pipeline
 
 ```csharp
