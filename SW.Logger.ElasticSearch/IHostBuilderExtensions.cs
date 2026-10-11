@@ -22,7 +22,15 @@ namespace SW.Logger.ElasticSerach
 {
     public static class IHostBuilderExtensions
     {
-        public static IHostBuilder UseSwElasticSearchLogger(this IHostBuilder builder, Action<LoggerOptions> configure = null)
+        /// <param name="configure">Overrides the options read from the "SwLogger" configuration section.</param>
+        /// <param name="configureLogger">
+        /// Runs after the built-in sinks are configured, to add more sinks or enrichers (for example
+        /// Sentry). UseSerilog replaces the .NET logging pipeline, so a logging provider registered
+        /// elsewhere never receives these logs; a Serilog sink added here does.
+        /// </param>
+        public static IHostBuilder UseSwElasticSearchLogger(this IHostBuilder builder,
+            Action<LoggerOptions> configure = null,
+            Action<HostBuilderContext, LoggerConfiguration> configureLogger = null)
         {
             var loggerOptions = new LoggerOptions
             {
@@ -32,7 +40,10 @@ namespace SW.Logger.ElasticSerach
             if (configure != null) configure.Invoke(loggerOptions);
 
             return builder.UseSerilog((hostBuilderContext, loggerConfiguration) =>
-                ConfigureSerilog(hostBuilderContext, loggerConfiguration, loggerOptions));
+            {
+                ConfigureSerilog(hostBuilderContext, loggerConfiguration, loggerOptions);
+                configureLogger?.Invoke(hostBuilderContext, loggerConfiguration);
+            });
         }
 
         private static LoggerConfiguration ConfigureSerilog(HostBuilderContext hostBuilderContext,
