@@ -60,10 +60,12 @@ namespace SW.Logger.ElasticSerach
 
             loggerConfiguration = loggerConfiguration
                 .MinimumLevel.Is((LogEventLevel)loggerOptions.LoggingLevel)
-                //.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("Environment", hostBuilderContext.HostingEnvironment.EnvironmentName)
                 .Enrich.WithProperty("ApplicationVersion", loggerOptions.ApplicationVersion);
+
+            foreach (var (source, level) in loggerOptions.MinimumLevelOverrides ?? new())
+                loggerConfiguration = loggerConfiguration.MinimumLevel.Override(source, (LogEventLevel)level);
 
             loggerConfiguration = Debugger.IsAttached
                 ? loggerConfiguration.WriteTo.Console()

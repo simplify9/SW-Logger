@@ -36,13 +36,22 @@ namespace SW.Logger.ElasticSerach
             Timers.GetOrAdd(dataStream, _ => new Timer(_ => Apply(options, dataStream), null, TimeSpan.Zero, ReapplyInterval));
         }
 
-        internal static string PolicyBody(int deleteAfterDays) =>
+        internal static string PolicyBody(int deleteAfterDays, int? replicasAfterRollover = null) =>
             "{\"policy\":{" +
-            "\"_meta\":{\"description\":\"Managed by SimplyWorks.Logger.ElasticSearch. Change ElasticsearchDeleteIndexAfterDays instead of editing this policy.\"}," +
+            "\"_meta\":{\"description\":\"Managed by SimplyWorks.Logger.ElasticSearch. Change ElasticsearchDeleteIndexAfterDays / ElasticsearchReplicasAfterRollover instead of editing this policy.\"}," +
             "\"phases\":{" +
             "\"hot\":{\"min_age\":\"0ms\",\"actions\":{\"rollover\":{\"max_age\":\"30d\",\"max_primary_shard_size\":\"50gb\"}}}," +
+            WarmPhase(replicasAfterRollover) +
             $"\"delete\":{{\"min_age\":\"{deleteAfterDays}d\",\"actions\":{{\"delete\":{{}}}}}}" +
             "}}}";
+
+        // Right after rollover: drop replicas of the index no longer being written. migrate is
+        // disabled so the index stays on the nodes it is on; a warm phase would otherwise try to
+        // move it to warm-tier nodes, which these clusters don't have.
+        private static string WarmPhase(int? replicasAfterRollover) =>
+            replicasAfterRollover is { } replicas && replicas >= 0
+                ? $"\"warm\":{{\"min_age\":\"0ms\",\"actions\":{{\"allocate\":{{\"number_of_replicas\":{replicas}}},\"migrate\":{{\"enabled\":false}}}}}},"
+                : "";
 
         internal static string SettingsBody(string policyName) =>
             $"{{\"index\":{{\"lifecycle\":{{\"name\":\"{policyName}\"}}}}}}";
@@ -57,7 +66,8 @@ namespace SW.Logger.ElasticSerach
                 var policyName = PolicyName(dataStream);
 
                 var policy = client.DoRequest<StringResponse>(HttpMethod.PUT, $"_ilm/policy/{policyName}",
-                    PostData.String(PolicyBody(options.ElasticsearchDeleteIndexAfterDays)));
+                    PostData.String(PolicyBody(options.ElasticsearchDeleteIndexAfterDays,
+                        options.ElasticsearchReplicasAfterRollover)));
                 if (!policy.Success)
                 {
                     Console.WriteLine($"SwLogger: could not save retention policy {policyName}: {policy.HttpStatusCode} {policy.Body}");
