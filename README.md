@@ -153,6 +153,11 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 - `ElasticsearchEnvironments`: Environments where ElasticSearch logging is enabled
 - `ElasticsearchCertificatePath`: Path to SSL certificate (optional)
 - `ElasticsearchDeleteIndexAfterDays`: Days logs are kept before being deleted (default: 90). Set to `0` to keep logs forever.
+- `ElasticsearchReplicasAfterRollover`: Replica count for each monthly backing index once it has rolled over and is no longer written to. `0` halves the disk older logs use; the index currently being written keeps its replicas, so node restarts never stop logging. Not set by default (replicas unchanged).
+- `MinimumLevelOverrides`: Minimum level per log source, overriding `LoggingLevel` for that source and everything under it. Levels are Serilog's: 0 Verbose, 1 Debug, 2 Information, 3 Warning, 4 Error, 5 Fatal. For example, to stop shipping one line per database query:
+  ```json
+  "MinimumLevelOverrides": { "Microsoft.EntityFrameworkCore": 3, "Microsoft.AspNetCore": 3 }
+  ```
 
 ## Usage Examples
 
