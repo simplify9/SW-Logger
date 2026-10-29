@@ -216,6 +216,8 @@ SW-Logger/
 │   ├── IHostBuilderExtensions.cs
 │   ├── LoggerOptions.cs
 │   └── StringExtensions.cs
+├── SW.Logger.IntegrationTests/  # Critical journeys against a throwaway Elasticsearch (Testcontainers)
+├── SW.Logger.UnitTests/         # Unit tests
 └── SW.Logger.SampleWeb/         # Sample web application
     ├── Program.cs
     ├── Startup.cs
@@ -252,6 +254,18 @@ Supports both basic authentication and certificate-based authentication for Elas
 
 - .NET 8.0 or higher
 - For ElasticSearch logging: ElasticSearch cluster (7.x or 8.x)
+
+## Tests
+
+```sh
+dotnet test SW.Logger.UnitTests
+# Against a throwaway Elasticsearch 8.18 container (needs Docker): logs reach the data stream,
+# and the retention policy is saved and applied.
+dotnet test SW.Logger.IntegrationTests
+```
+
+On Docker Desktop for macOS, if containers fail with `invalid mount config ... docker.raw.sock`,
+run with `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`.
 
 ## Contributing
 
