@@ -136,7 +136,7 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 - `ApplicationVersion`: Version of your application (auto-detected from assembly)
 - `LoggingLevel`: Minimum level as Serilog's `LogEventLevel` number: 0=Verbose, 1=Debug, 2=Information (default), 3=Warning, 4=Error, 5=Fatal. `Microsoft.AspNetCore` and `Microsoft.EntityFrameworkCore` are always held at Warning.
 - `Environments`: Comma-separated list of environments where logging is active
-- `LogRequests`: Write one line per HTTP request with its duration, status and a `Route` property holding the route template (`/api/orders/{id}`), so requests can be grouped per endpoint. Kept even when `LoggingLevel` is above Information. Default `true`.
+- `LogRequests`: Write one line per HTTP request with its duration, status and a `Route` property holding the route template (`/api/orders/{id}`), so requests can be grouped per endpoint, plus `User` (the caller's name identifier, when signed in) and `UserAgent` (cut to 200 characters), so requests can be counted per caller. Kept even when `LoggingLevel` is above Information. Default `true`.
 - `SlowQueryMilliseconds`: EF Core commands taking at least this long are logged ("Executed DbCommand (Nms)"), so a slow request can be traced to its query; faster ones are not logged. Failed commands always are. `0` disables. Default `500`.
 - `QuietRequestPaths`: Comma-separated path prefixes whose successful requests are dropped (default `/health,/healthz,/metrics`). Failures are still logged.
 

@@ -1,15 +1,21 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Events;
+using SW.PrimitiveTypes;
 
 namespace SW.Logger.Console;
 
 internal static class RequestLogging
 {
     public const string RouteProperty = "Route";
+    public const string UserProperty = "User";
+    public const string UserAgentProperty = "UserAgent";
+    public const int MaxUserAgentLength = 200;
     public const string UnmatchedRoute = "unmatched";
 
     /// <summary>
@@ -22,6 +28,29 @@ internal static class RequestLogging
         if (httpContext.GetEndpoint() is not RouteEndpoint { RoutePattern.RawText: { Length: > 0 } raw })
             return UnmatchedRoute;
         return raw.StartsWith('/') ? raw : "/" + raw;
+    }
+
+    /// <summary>
+    /// Who made the request, so calls can be counted per caller. The request line is written after
+    /// the rest of the pipeline has finished, outside the scope UseRequestContextLogEnricher pushes
+    /// User into, so it has to be read again here.
+    /// </summary>
+    public static string? GetUser(HttpContext httpContext)
+    {
+        var requestContext = httpContext.RequestServices?.GetService<RequestContext>();
+        if (requestContext is { IsValid: true } && requestContext.GetNameIdentifier() is { Length: > 0 } id)
+            return id;
+        return httpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value is { Length: > 0 } claim
+            ? claim
+            : null;
+    }
+
+    /// <summary>The client's User-Agent, cut to a fixed length so one client can't bloat every line.</summary>
+    public static string? GetUserAgent(HttpContext httpContext)
+    {
+        var value = httpContext.Request.Headers.UserAgent.ToString();
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        return value.Length > MaxUserAgentLength ? value[..MaxUserAgentLength] : value;
     }
 
     public static LogEventLevel GetLevel(HttpContext httpContext, Exception? ex, string[] quietPaths)
@@ -50,7 +79,13 @@ internal static class RequestLogging
     {
         var quietPaths = ParsePaths(loggerOptions.QuietRequestPaths);
         options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
             diagnosticContext.Set(RouteProperty, GetRoute(httpContext));
+            if (GetUser(httpContext) is { } user)
+                diagnosticContext.Set(UserProperty, user);
+            if (GetUserAgent(httpContext) is { } userAgent)
+                diagnosticContext.Set(UserAgentProperty, userAgent);
+        };
         options.GetLevel = (httpContext, _, ex) => GetLevel(httpContext, ex, quietPaths);
     }
 
