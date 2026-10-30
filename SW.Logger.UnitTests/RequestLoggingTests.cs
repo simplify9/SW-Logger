@@ -83,4 +83,20 @@ public class RequestLoggingTests
     [Fact]
     public void Other_sources_are_untouched() =>
         Assert.False(RequestLogging.IsFastEfCommand(Ef(LogEventLevel.Information, "1", "Other"), 500));
+
+    [Fact]
+    public void User_agent_is_cut_to_a_fixed_length()
+    {
+        var ctx = Context("/x");
+        ctx.Request.Headers.UserAgent = new string('a', 500);
+        Assert.Equal(RequestLogging.MaxUserAgentLength, RequestLogging.GetUserAgent(ctx)!.Length);
+    }
+
+    [Fact]
+    public void No_user_agent_and_no_user_give_null()
+    {
+        var ctx = Context("/x");
+        Assert.Null(RequestLogging.GetUserAgent(ctx));
+        Assert.Null(RequestLogging.GetUser(ctx));
+    }
 }
