@@ -41,4 +41,11 @@ public class LoggerOptions
     /// volume down. 0 or less disables slow-query logging. Default 500.
     /// </summary>
     public int SlowQueryMilliseconds { get; set; }
+
+    /// <summary>
+    /// Properties added to every log line, such as which deployment wrote it. Set in code, or under
+    /// <c>SwLogger:Properties</c> in configuration (configuration wins for the same name). A name the logger sets
+    /// itself (Environment, Application, ApplicationVersion) keeps its value, and an empty value is left out.
+    /// </summary>
+    public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }

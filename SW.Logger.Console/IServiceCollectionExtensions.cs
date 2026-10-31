@@ -11,6 +11,9 @@ namespace SW.Logger.Console;
 
 public static class IServiceCollectionExtensions
 {
+    static readonly HashSet<string> ReservedProperties = new(StringComparer.OrdinalIgnoreCase)
+        { "Environment", "Application", "ApplicationVersion" };
+
     public static IServiceCollection AddSWConsoleLogger(this IServiceCollection services,
         Action<LoggerOptions> configure = null)
     {
@@ -45,6 +48,9 @@ public static class IServiceCollectionExtensions
             .Enrich.WithProperty("Environment", hostEnvironment.EnvironmentName)
             .Enrich.WithProperty("ApplicationVersion", loggerOptions.ApplicationVersion)
             .Enrich.WithProperty("Application", loggerOptions.ApplicationName);
+        foreach (var (name, value) in loggerOptions.Properties)
+            if (!string.IsNullOrEmpty(value) && !ReservedProperties.Contains(name))
+                loggerConfiguration = loggerConfiguration.Enrich.WithProperty(name, value);
         
         loggerConfiguration = Debugger.IsAttached
             ? loggerConfiguration.WriteTo.Console()

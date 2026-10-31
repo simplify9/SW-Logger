@@ -19,8 +19,12 @@ public class EndToEndTests
     private static async Task<string> Run(int loggingLevel, Action<ILoggerFactory> act, params string[] paths) =>
         await Run(loggingLevel, act, null, paths);
 
+    private static Task<string> Run(int loggingLevel, Action<ILoggerFactory> act,
+        Action<HttpClient> configureClient, params string[] paths) =>
+        Run(loggingLevel, act, configureClient, null, paths);
+
     private static async Task<string> Run(int loggingLevel, Action<ILoggerFactory> act,
-        Action<HttpClient> configureClient, params string[] paths)
+        Action<HttpClient> configureClient, Action<LoggerOptions> configureLogger, params string[] paths)
     {
         var original = System.Console.Out;
         var captured = new StringWriter();
@@ -33,6 +37,7 @@ public class EndToEndTests
             {
                 o.ApplicationName = "test";
                 o.LoggingLevel = loggingLevel;
+                configureLogger?.Invoke(o);
             });
             var app = builder.Build();
             // Stands in for authentication: a request with an X-Test-User header is signed in as that user.
@@ -59,6 +64,21 @@ public class EndToEndTests
         }
 
         return captured.ToString();
+    }
+
+    [Fact]
+    public async Task Every_line_carries_the_configured_properties()
+    {
+        var output = await Run(3, null, null, o =>
+        {
+            o.Properties["Deployment"] = "acme";
+            o.Properties["Application"] = "not-the-app";
+            o.Properties["Empty"] = "";
+        }, "/api/orders/1");
+        Assert.Contains("\"Deployment\":\"acme\"", output);
+        Assert.Contains("\"Application\":\"test\"", output);
+        Assert.DoesNotContain("not-the-app", output);
+        Assert.DoesNotContain("\"Empty\"", output);
     }
 
     [Theory]
