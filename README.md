@@ -138,6 +138,7 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 - `Environments`: Comma-separated list of environments where logging is active
 - `LogRequests`: Write one line per HTTP request with its duration, status and a `Route` property holding the route template (`/api/orders/{id}`), so requests can be grouped per endpoint, plus `User` (the caller's name identifier, when signed in) and `UserAgent` (cut to 200 characters), so requests can be counted per caller. Kept even when `LoggingLevel` is above Information. Default `true`.
 - `SlowQueryMilliseconds`: EF Core commands taking at least this long are logged ("Executed DbCommand (Nms)"), so a slow request can be traced to its query; faster ones are not logged. Failed commands always are. `0` disables. Default `500`.
+- `Properties`: added to every log line, such as which deployment wrote it. Set in code (`o.Properties["Deployment"] = "acme"`) or under `SwLogger:Properties`; configuration wins for the same name. `Environment`, `Application` and `ApplicationVersion` keep the logger's values, and an empty value is left out.
 - `QuietRequestPaths`: Comma-separated path prefixes whose successful requests are dropped (default `/health,/healthz,/metrics`). Failures are still logged.
 
 > **Upgrading:** before this change `LoggingLevel` defaulted to 1, which is Debug, not Information as this README claimed. Apps that never set it now log at Information, and framework chatter from ASP.NET Core and EF Core is Warning-only.
