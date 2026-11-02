@@ -36,7 +36,7 @@
 
     <ItemGroup>
       <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-      <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="10.0.1" />
+      <PackageReference Include="SimplyWorks.PrimitiveTypes" Version="10.0.2" />
     </ItemGroup>
 
 </Project>
