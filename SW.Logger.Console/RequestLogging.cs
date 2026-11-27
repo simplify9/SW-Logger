@@ -75,9 +75,42 @@ internal static class RequestLogging
         .Select(p => p.StartsWith('/') ? p : "/" + p)
         .ToArray();
 
+    public const int MaxBaggageValueLength = 200;
+
+    public static string[] ParseKeys(string keys) =>
+        (keys ?? string.Empty)
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Distinct(StringComparer.Ordinal)
+        .ToArray();
+
+    /// <summary>
+    /// The allowed entries of the request's W3C <c>baggage</c> header(s): <c>key=value;props, …</c>, values
+    /// percent-encoded. Keys are case-sensitive; the first occurrence of a key wins; a malformed entry is skipped.
+    /// </summary>
+    public static IEnumerable<KeyValuePair<string, string>> GetBaggage(HttpContext httpContext, string[] allowedKeys)
+    {
+        if (allowedKeys.Length == 0) yield break;
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var header in httpContext.Request.Headers["baggage"])
+        foreach (var entry in (header ?? string.Empty).Split(','))
+        {
+            var member = entry.Split(';', 2)[0];
+            var eq = member.IndexOf('=');
+            if (eq <= 0) continue;
+            var key = member[..eq].Trim();
+            if (Array.IndexOf(allowedKeys, key) < 0 || !seen.Add(key)) continue;
+            string value;
+            try { value = Uri.UnescapeDataString(member[(eq + 1)..].Trim()); }
+            catch (UriFormatException) { continue; }
+            if (value.Length == 0) continue;
+            yield return new(key, value.Length > MaxBaggageValueLength ? value[..MaxBaggageValueLength] : value);
+        }
+    }
+
     public static void Configure(RequestLoggingOptions options, LoggerOptions loggerOptions)
     {
         var quietPaths = ParsePaths(loggerOptions.QuietRequestPaths);
+        var baggageKeys = ParseKeys(loggerOptions.BaggageKeys);
         options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
         {
             diagnosticContext.Set(RouteProperty, GetRoute(httpContext));
@@ -85,6 +118,8 @@ internal static class RequestLogging
                 diagnosticContext.Set(UserProperty, user);
             if (GetUserAgent(httpContext) is { } userAgent)
                 diagnosticContext.Set(UserAgentProperty, userAgent);
+            foreach (var (key, value) in GetBaggage(httpContext, baggageKeys))
+                diagnosticContext.Set(key, value);
         };
         options.GetLevel = (httpContext, _, ex) => GetLevel(httpContext, ex, quietPaths);
     }

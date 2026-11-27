@@ -140,6 +140,7 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 - `SlowQueryMilliseconds`: EF Core commands taking at least this long are logged ("Executed DbCommand (Nms)"), so a slow request can be traced to its query; faster ones are not logged. Failed commands always are. `0` disables. Default `500`.
 - `Properties`: added to every log line, such as which deployment wrote it. Set in code (`o.Properties["Deployment"] = "acme"`) or under `SwLogger:Properties`; configuration wins for the same name. `Environment`, `Application` and `ApplicationVersion` keep the logger's values, and an empty value is left out.
 - `QuietRequestPaths`: Comma-separated path prefixes whose successful requests are dropped (default `/health,/healthz,/metrics`). Failures are still logged.
+- `BaggageKeys`: Comma-separated W3C `baggage` header keys copied onto the request line as properties of the same name (default empty: none). Only listed keys are read, since clients set the header; values are cut to 200 characters. The caller's `traceparent` needs no option: its trace id is already on every line as `@tr`.
 
 > **Upgrading:** before this change `LoggingLevel` defaulted to 1, which is Debug, not Information as this README claimed. Apps that never set it now log at Information, and framework chatter from ASP.NET Core and EF Core is Warning-only.
 
