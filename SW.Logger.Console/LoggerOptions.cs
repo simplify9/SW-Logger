@@ -48,4 +48,12 @@ public class LoggerOptions
     /// itself (Environment, Application, ApplicationVersion) keeps its value, and an empty value is left out.
     /// </summary>
     public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Comma-separated W3C <c>baggage</c> keys (https://www.w3.org/TR/baggage/) copied onto the request line,
+    /// each as a property of the same name, e.g. <c>ui.page,ui.session</c> for the page and browser tab a call
+    /// came from. Only these keys are read: baggage is set by the caller, so an open list would let any client
+    /// add properties. Values are cut to a fixed length. Empty (the default) reads none.
+    /// </summary>
+    public string BaggageKeys { get; set; } = string.Empty;
 }

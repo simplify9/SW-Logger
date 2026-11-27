@@ -105,6 +105,36 @@ public class EndToEndTests
     }
 
     [Fact]
+    public async Task Request_line_carries_the_callers_trace_id()
+    {
+        const string traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+        var output = await Run(3, null, c =>
+            c.DefaultRequestHeaders.Add("traceparent", $"00-{traceId}-00f067aa0ba902b7-01"), "/api/orders/1");
+        Assert.Contains($"\"@tr\":\"{traceId}\"", output);
+    }
+
+    [Fact]
+    public async Task Request_line_carries_only_the_allowed_baggage()
+    {
+        var output = await Run(3, null,
+            c => c.DefaultRequestHeaders.Add("baggage", "ui.page=%2Fshipments%2F42;p=1, ui.session=ab12,secret=x,ui.page=later"),
+            o => o.BaggageKeys = "ui.page, ui.session",
+            "/api/orders/1");
+        Assert.Contains("\"ui.page\":\"/shipments/42\"", output);
+        Assert.Contains("\"ui.session\":\"ab12\"", output);
+        Assert.DoesNotContain("secret", output);
+        Assert.DoesNotContain("later", output);
+    }
+
+    [Fact]
+    public async Task Baggage_is_ignored_unless_keys_are_allowed()
+    {
+        var output = await Run(3, null, c => c.DefaultRequestHeaders.Add("baggage", "ui.page=%2Fx"), "/api/orders/1");
+        Assert.Contains("\"Route\":\"/api/orders/{id}\"", output);
+        Assert.DoesNotContain("ui.page", output);
+    }
+
+    [Fact]
     public async Task Anonymous_request_line_has_no_user()
     {
         var output = await Run(3, "/api/orders/1");
